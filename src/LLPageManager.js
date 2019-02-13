@@ -1,0 +1,242 @@
+import { MAX_SIZE } from './constants'
+import Page from './Page'
+import { CircularDoublyLinkedList } from '@humanwhocodes/circular-doubly-linked-list'
+import { LRUMap } from 'lru_map'
+
+// 对于动态伸缩的容器，用 size 属性可能更好一些
+const defaultOpts = {
+  size: MAX_SIZE
+}
+
+class LLPageManager {
+  constructor({ size = MAX_SIZE } = defaultOpts) {
+    this.size = size
+    this.pageList = new CircularDoublyLinkedList()
+    this.runningPage = null
+    this.lruMap = new LRUMap(size)
+  }
+
+  // 是否已满
+  get isFull() {
+    return this.size === this.pageList.size
+  }
+
+  // 是否为空
+  get isEmpty() {
+    return this.pageList.size === 0
+  }
+
+  _checkPageIns(page) {
+    if (!(page instanceof Page)) {
+      throw new Error(
+        'page must be instanceof `Page`, use `createPage` first.'
+      )
+    }
+  }
+
+  // 绑定 Page 实例 与 LLPageManager 实例
+  _bindThisCtx(page) {
+    page.ctx = this
+  }
+
+  _genLruCacheKeyName(page) {
+    return `llpage-${page.id}`
+  }
+
+  open(page) {
+    this._checkPageIns(page)
+    this._bindThisCtx(page)
+
+    // 查找是否存在这个 page
+    // 并且触发一次 lru 访问
+    const existingPage = this.lruMap.get(this._genLruCacheKeyName(page))
+
+    // 如果链表已达到保活最大长度值
+    if (this.isFull) {
+      if (existingPage) {
+        // A B C! D E
+        // open C
+        // 如果存在该页面，并且也在运行中，则不做任何处理
+        if (existingPage.isRunning) return
+
+        // A B C! D E
+        // open A ->
+        // A! B C D E
+        // 对这个存在的页面重新激活，触发 onResume
+        existingPage.hooks.onResume()
+
+        // 对目前在运行中的页面触发 onPause
+        this.runningPage.hooks.onPause()
+
+        this.runningPage = existingPage
+      } else {
+        let _lastDeletedindex
+
+        // 如果不存在该 page
+        // 则启用 LRU 策略进行淘汰
+        const oldestPage = this.lruMap.oldest
+
+        // 淘汰
+        oldestPage.hooks.onStop()
+        oldestPage.hooks.onDestroy()
+
+        // 将旧页面从缓存中删除
+        this.lruMap.delete(this._genLruCacheKeyName(oldestPage))
+        _lastDeletedindex = this.pageList.indexOf(oldestPage)
+
+        // 将旧页面从链表中删除
+        this.pageList.remove(_lastDeletedindex)
+
+        // 唤起新页面
+        // TODO: restart 的情况
+        page.hooks.onCreate()
+        page.hooks.onStart()
+
+        // 缓存更新
+        this.lruMap.put(this._genLruCacheKeyName(page), page)
+        // 将页面插入到链表
+        this.pageList.insertBefore(page, _lastDeletedindex)
+
+        // 变更 runningPage
+        this.runningPage = page
+      }
+    } else {
+      this.lruMap.put(this._genLruCacheKeyName(page), page)
+
+      // 没有满的时候应该是依次插入到链表中去的
+      if (this.isEmpty) {
+        // open A ->
+        // A
+        // 初始化空的时候
+        this.runningPage = page
+
+        this.runningPage.hooks.onCreate()
+        this.runningPage.hooks.onStart()
+
+        // 插入到链表尾部
+        this.pageList.add(page)
+      } else {
+        // A B C!
+        // open D ->
+        // A B C D!
+        this.runningPage.hooks.onPause()
+
+        // 依次触发 onCreate && onStart
+        page.hooks.onCreate()
+        page.hooks.onStart()
+
+        this.runningPage = page
+
+        // 插入到链表尾部
+        this.pageList.add(page)
+      }
+    }
+  }
+
+  findPage(page) {
+    return this.pageList.indexOf(page) >= 0 ? page : undefined
+  }
+
+  close(page) {
+    if (this.isEmpty) return
+
+    this._checkPageIns(page)
+    this._bindThisCtx(page)
+
+    // 查找是否存在这个 page
+    const existingPage = this.findPage(page)
+
+    if (!existingPage) throw new Error('can not close nonexistent page.')
+
+    // 如果只有一个节点
+    if (this.pageList.size === 1) {
+      // 直接关闭即可
+      existingPage.hooks.onStop()
+      existingPage.hooks.onDestroy()
+
+      this.runningPage = null
+    }
+
+    // 如果此时在尾部
+    if (this.pageList.indexOf(existingPage) === this.pageList.size - 1) {
+      existingPage.previous.data.hooks.onResume()
+      this.runningPage = existingPage.previous.data
+    }
+
+    // 默认移除后，后续节点前移
+    existingPage.next.data.hooks.onResume()
+    this.runningPage = existingPage.next.data
+
+    // 从链表里将这个 page 删除
+    this.pageList.remove(this.pageList.indexOf(page))
+    // 从缓存里删除
+    this.lruMap.delete(this._genLruCacheKeyName(page))
+  }
+
+  closeAll() {
+    if (this.isEmpty) return
+
+    // 依次直接关闭，过程中已不需要再触发 onResume 等 hook
+    this._closeRemainingPages()
+
+    // 清空缓存
+    this.lruMap.clear()
+
+    // 清空链表
+    this.pageList.clear()
+
+    this.runningPage = null
+  }
+
+  _clearRemainingStatus() {
+    const remainingPages = [...this.pageList.reverse()]
+    remainingPages.forEach(pageNode => {
+      this.pageList.remove(this.pageList.indexOf(pageNode.data))
+      this.lruMap.delete(this._genLruCacheKeyName(pageNode.data))
+    })
+  }
+
+  _closeRemainingPages() {
+    // 从尾部开始执行
+    const remainingPages = [...this.pageList.reverse()]
+    remainingPages.forEach(pageNode => {
+      pageNode.data.onStop()
+      pageNode.data.onDestroy()
+    })
+  }
+
+  closeOthers(page) {
+    if (this.isEmpty) return
+
+    this._checkPageIns(page)
+    this._bindThisCtx(page)
+
+    // 查找是否存在这个 page
+    const existingPage = this.findPage(page)
+
+    if (!existingPage) throw new Error('can not leave nonexistent page.')
+
+    // 如果 page 在 running
+    // 并且此时只有一个节点
+    if (page.isRunning && this.pageList.size === 1) return
+
+    // 只有命中非 running 目标，才触发 onResume
+    if (!page.isRunning) page.hooks.onResume()
+
+    // 先将自己从链表移除
+    this.pageList.remove(this.pageList.indexOf(page))
+
+    // 随后依次触发剩余节点的 onStop onDestroy
+    this._closeRemainingPages()
+
+    // 将余下的节点全部从链表和 lru 中清除
+    this._clearRemainingStatus()
+    
+    // 再将自己添加回到链表中
+    this.pageList.add(page)
+
+    this.runningPage = page
+  }
+}
+
+export default LLPageManager

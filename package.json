@@ -1,0 +1,31 @@
+{
+  "name": "llpage",
+  "version": "1.0.0",
+  "description": "page operation model with LRU & lifecycle strategy.",
+  "main": "lib/index.js",
+  "files": [
+    "lib"
+  ],
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "build": "babel src --out-dir lib",
+    "lint": "eslint **/*.js --fix"
+  },
+  "keywords": [
+    "page",
+    "lifecycle",
+    "lru"
+  ],
+  "author": "tianyu.gty",
+  "license": "MIT",
+  "devDependencies": {
+    "@babel/cli": "^7.2.3",
+    "@babel/core": "^7.2.2",
+    "@babel/preset-env": "^7.3.1",
+    "eslint": "^5.13.0"
+  },
+  "dependencies": {
+    "@humanwhocodes/circular-doubly-linked-list": "^2.0.2",
+    "lru_map": "^0.3.3"
+  }
+}
