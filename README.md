@@ -2,6 +2,8 @@
 
 > 🚀 page operation model (in memory) with LRU & lifecycle strategy.
 
+![屏幕快照 2019-02-13 下午5.25.56.png](https://intranetproxy.alipay.com/skylark/lark/0/2019/png/1429/1550050126197-a6728f55-56a7-46f7-9427-ae0f56095c7b.png) 
+
 ### Quick Start
 
 ```javascript
