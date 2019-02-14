@@ -1,3 +1,11 @@
 {
-  "presets": [["@babel/preset-env", { "loose": true }]]
+  "presets": [["@babel/preset-env", { "loose": false }]],
+  "plugins": [
+    [
+      "@babel/plugin-transform-runtime",
+      {
+        "useESModules": true
+      }
+    ]
+  ]
 }

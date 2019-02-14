@@ -15,19 +15,24 @@ const LIFE_CYCLE_HOOKS = Object.keys(defaultOpts).filter(k => k !== DATA_KEY)
 
 class Page {
   // TODO: pool (内部池化)
-  constructor(id, opts = defaultOpts) {
+  constructor(id, opts = {}) {
     this._id = id
     this.hooks = {}
     this._ctx = null
     this._count = 0
     this._isDead = false
-    this._init(opts)
+    this._init(Object.assign({}, defaultOpts, opts))
   }
 
   _init(opts) {
     for (let k in opts) {
       if (LIFE_CYCLE_HOOKS.indexOf(k) >= 0) {
-        this.hooks[k] = opts[k]
+        const hookFunction = opts[k]
+        if (typeof hookFunction === 'function') {
+          this.hooks[k] = hookFunction.bind(this)
+        } else {
+          throw new Error('lifecycle must be a function.')
+        }
       } else {
         this[k] = opts[k]
       }

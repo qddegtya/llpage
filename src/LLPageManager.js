@@ -109,7 +109,7 @@ class LLPageManager {
         this._openPage(page)
 
         // 缓存更新
-        this.lruMap.put(this._genLruCacheKeyName(page), page)
+        this.lruMap.set(this._genLruCacheKeyName(page), page)
         // 将页面插入到链表
         this.pageList.insertBefore(page, _lastDeletedindex)
 
@@ -117,7 +117,7 @@ class LLPageManager {
         this.runningPage = page
       }
     } else {
-      this.lruMap.put(this._genLruCacheKeyName(page), page)
+      this.lruMap.set(this._genLruCacheKeyName(page), page)
 
       // 没有满的时候应该是依次插入到链表中去的
       if (this.isEmpty) {
@@ -126,24 +126,32 @@ class LLPageManager {
         // 初始化空的时候
         this.runningPage = page
 
-        this.runningPage.hooks.onCreate()
-        this.runningPage.hooks.onStart()
+        this._openPage(page)
 
         // 插入到链表尾部
         this.pageList.add(page)
       } else {
-        // A B C!
-        // open D ->
-        // A B C D!
-        this.runningPage.hooks.onPause()
+        // 如果此前存在这个 page
+        if (existingPage) {
+          this.runningPage.hooks.onPause()
+          // 则只需要触发 onResume
+          existingPage.hooks.onResume()
+          
+          this.runningPage = existingPage
+        } else {
+          // A B C!
+          // open D ->
+          // A B C D!
+          this.runningPage.hooks.onPause()
 
-        // 依次触发 onCreate && onStart
-        this._openPage(page)
+          // 依次触发 onCreate && onStart
+          this._openPage(page)
 
-        this.runningPage = page
+          this.runningPage = page
 
-        // 插入到链表尾部
-        this.pageList.add(page)
+          // 插入到链表尾部
+          this.pageList.add(page)
+        }
       }
     }
   }
@@ -169,17 +177,27 @@ class LLPageManager {
       this._closePage(existingPage)
 
       this.runningPage = null
-    }
+    } else {
+      // 先关闭
+      this._closePage(existingPage)
 
-    // 如果此时在尾部
-    if (this.pageList.indexOf(existingPage) === this.pageList.size - 1) {
-      existingPage.previous.data.hooks.onResume()
-      this.runningPage = existingPage.previous.data
-    }
+      // 获取链表位置
+      const _idx = this.pageList.indexOf(existingPage)
 
-    // 默认移除后，后续节点前移
-    existingPage.next.data.hooks.onResume()
-    this.runningPage = existingPage.next.data
+      // 如果此时在尾部
+      if (_idx === this.pageList.size - 1) {
+        // 取前链表节点
+        const _preNode = this.pageList.get(_idx - 1)
+        _preNode.hooks.onResume()
+        this.runningPage = _preNode
+      } else {
+        // 默认移除后，后续节点前移
+        // 取后链表节点
+        const _nextNode = this.pageList.get(_idx + 1)
+        _nextNode.hooks.onResume()
+        this.runningPage = _nextNode
+      }
+    }
 
     // 从链表里将这个 page 删除
     this.pageList.remove(this.pageList.indexOf(page))
@@ -205,8 +223,8 @@ class LLPageManager {
   _clearRemainingStatus() {
     const remainingPages = [...this.pageList.reverse()]
     remainingPages.forEach(pageNode => {
-      this.pageList.remove(this.pageList.indexOf(pageNode.data))
-      this.lruMap.delete(this._genLruCacheKeyName(pageNode.data))
+      this.pageList.remove(this.pageList.indexOf(pageNode))
+      this.lruMap.delete(this._genLruCacheKeyName(pageNode))
     })
   }
 
@@ -214,7 +232,7 @@ class LLPageManager {
     // 从尾部开始执行
     const remainingPages = [...this.pageList.reverse()]
     remainingPages.forEach(pageNode => {
-      this._closePage(pageNode.data)
+      this._closePage(pageNode)
     })
   }
 
