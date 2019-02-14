@@ -63,3 +63,7 @@ ll.closeAll()
 #### onDestroy
 
 #### onRestart
+
+### TODO
+
+* 合并成一个链表模型
