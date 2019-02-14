@@ -34,18 +34,37 @@ class LLPageManager {
     }
   }
 
-  // 绑定 Page 实例 与 LLPageManager 实例
-  _bindThisCtx(page) {
-    page.ctx = this
-  }
-
   _genLruCacheKeyName(page) {
     return `llpage-${page.id}`
   }
 
+  _openPage (page) {
+    // 被打开过且当前状态是销毁状态
+    if (page.hasBeenOpened && page.isDead) {
+      // RSR
+      page.hooks.onRestart()
+      page.hooks.onStart()
+      page.hooks.onResume()
+    } else {
+      // CSR
+      page.hooks.onCreate()
+      page.hooks.onStart()
+      page.hooks.onResume()
+    }
+
+    page._resurgence()
+    page._addCount()
+  }
+
+  _closePage (page) {
+    page.hooks.onStop()
+    page.hooks.onDestroy()
+    page._kill()
+  }
+
   open(page) {
     this._checkPageIns(page)
-    this._bindThisCtx(page)
+    page.bindContext(this)
 
     // 查找是否存在这个 page
     // 并且触发一次 lru 访问
@@ -77,8 +96,7 @@ class LLPageManager {
         const oldestPage = this.lruMap.oldest
 
         // 淘汰
-        oldestPage.hooks.onStop()
-        oldestPage.hooks.onDestroy()
+        this._closePage(oldestPage)
 
         // 将旧页面从缓存中删除
         this.lruMap.delete(this._genLruCacheKeyName(oldestPage))
@@ -88,9 +106,7 @@ class LLPageManager {
         this.pageList.remove(_lastDeletedindex)
 
         // 唤起新页面
-        // TODO: restart 的情况
-        page.hooks.onCreate()
-        page.hooks.onStart()
+        this._openPage(page)
 
         // 缓存更新
         this.lruMap.put(this._genLruCacheKeyName(page), page)
@@ -122,8 +138,7 @@ class LLPageManager {
         this.runningPage.hooks.onPause()
 
         // 依次触发 onCreate && onStart
-        page.hooks.onCreate()
-        page.hooks.onStart()
+        this._openPage(page)
 
         this.runningPage = page
 
@@ -141,7 +156,7 @@ class LLPageManager {
     if (this.isEmpty) return
 
     this._checkPageIns(page)
-    this._bindThisCtx(page)
+    page.bindContext(this)
 
     // 查找是否存在这个 page
     const existingPage = this.findPage(page)
@@ -151,8 +166,7 @@ class LLPageManager {
     // 如果只有一个节点
     if (this.pageList.size === 1) {
       // 直接关闭即可
-      existingPage.hooks.onStop()
-      existingPage.hooks.onDestroy()
+      this._closePage(existingPage)
 
       this.runningPage = null
     }
@@ -200,8 +214,7 @@ class LLPageManager {
     // 从尾部开始执行
     const remainingPages = [...this.pageList.reverse()]
     remainingPages.forEach(pageNode => {
-      pageNode.data.onStop()
-      pageNode.data.onDestroy()
+      this._closePage(pageNode.data)
     })
   }
 
@@ -209,7 +222,7 @@ class LLPageManager {
     if (this.isEmpty) return
 
     this._checkPageIns(page)
-    this._bindThisCtx(page)
+    page.bindContext(this)
 
     // 查找是否存在这个 page
     const existingPage = this.findPage(page)
