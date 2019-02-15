@@ -268,6 +268,10 @@ class LLPageManager {
 
     this.runningPage = page
   }
+
+  refresh (page) {
+    // TODO
+  }
 }
 
 export default LLPageManager
