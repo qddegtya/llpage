@@ -8,6 +8,18 @@ const sleep = ms => {
   });
 };
 
+const _logToConsole = msg => {
+  const consolePannel = document.getElementById("consolep");
+  const consolePannelScroller = document.getElementById("consolep-scroll");
+
+  const _msgEle = document.createElement("div");
+
+  _msgEle.innerHTML = `<span style="font-size: 12px;line-height: 16px;color: #ffffff">${msg}</span>`;
+
+  consolePannel.appendChild(_msgEle);
+  consolePannelScroller.scrollTop = consolePannelScroller.scrollHeight;
+};
+
 const ll = createLLPageManager({
   size: 5
 });
@@ -48,7 +60,7 @@ const _createPage = (title, url) => ({
   },
 
   onCreate() {
-    console.log(`page: ${this.id} 将被创建`);
+    _logToConsole(`page: ${this.id} 将被创建`);
 
     this.rootNode = document.getElementById("main");
 
@@ -67,7 +79,7 @@ const _createPage = (title, url) => ({
   },
 
   onStart() {
-    console.log(`page: ${this.id} 将被启动`);
+    _logToConsole(`page: ${this.id} 将被启动`);
     // this.mountNode.style.display = "block";
     this.mountNode.style.transform = "translate3d(0, 0, 0)";
     this.mountNode.style.zIndex = 10;
@@ -83,7 +95,7 @@ const _createPage = (title, url) => ({
   },
 
   onPause() {
-    console.log(`page ${this.id} 被暂停`);
+    _logToConsole(`page ${this.id} 被暂停`);
 
     // this.mountNode.style.display = "none";
     this.mountNode.style.transform = "translate3d(0, -200%, 0)";
@@ -91,7 +103,7 @@ const _createPage = (title, url) => ({
   },
 
   onResume() {
-    console.log(`page ${this.id} 重新激活`);
+    _logToConsole(`page ${this.id} 重新激活`);
 
     // this.mountNode.style.display = "block";
     this.mountNode.style.transform = "translate3d(0, 0, 0)";
@@ -99,7 +111,7 @@ const _createPage = (title, url) => ({
   },
 
   onStop() {
-    console.log(`page ${this.id} 停止`);
+    _logToConsole(`page ${this.id} 停止`);
 
     this.mountNode.style.transform = "translate3d(0, -200%, 0)";
     this.mountNode.style.zIndex = -1;
@@ -107,14 +119,14 @@ const _createPage = (title, url) => ({
   },
 
   onDestroy() {
-    console.log(`page ${this.id} 将被销毁`);
+    _logToConsole(`page ${this.id} 将被销毁`);
 
     // 销毁自己
     this.rootNode.removeChild(this.mountNode);
   },
 
   onRestart() {
-    console.log(`page ${this.id} 重启`);
+    _logToConsole(`page ${this.id} 重启`);
 
     this.rootNode = document.getElementById("main");
 
@@ -153,8 +165,12 @@ class TabBar extends Component {
           zIndex: 999999
         }}
       >
-        {this.props.dataSrc.reverse().map((i, idx) => (
-          <TabBar.Item title={i.title} active key={idx} />
+        {this.props.dataSrc.map((i, idx) => (
+          <TabBar.Item
+            title={i.title}
+            active={idx === this.props.activeIdx}
+            key={idx}
+          />
         ))}
       </div>
     );
@@ -207,7 +223,7 @@ const Button = props => {
         justifyContent: "center",
         alignItems: "center",
         color: "#ffffff",
-        backgroundColor: "#0984e3",
+        backgroundColor: props.active ? "#0984e3" : "#f0f0f0",
         marginBottom: "10px",
         borderRadius: "9999px",
         fontSize: "16px",
@@ -216,7 +232,7 @@ const Button = props => {
       }}
       onClick={props.onClick}
     >
-      <span>{props.title}</span>
+      <span>{props.active ? `- ${props.title}` : props.title}</span>
     </div>
   );
 };
@@ -226,20 +242,14 @@ class MultiTabExample extends Component {
     super();
 
     this.state = {
-      openedTabs: [],
       activeIdx: -1
     };
   }
 
-  _openPage(page) {
+  _openPage(page, idx) {
     this.setState(
       {
-        openedTabs: [
-          {
-            title: page.data.title,
-            url: page.data.url
-          }
-        ].concat(this.state.openedTabs)
+        activeIdx: idx
       },
       () => {
         ll.open(page);
@@ -250,6 +260,77 @@ class MultiTabExample extends Component {
   render() {
     return (
       <div>
+        {/* console */}
+        <div
+          id="consolep-scroll"
+          style={{
+            width: "300px",
+            height: "600px",
+            backgroundColor: "rgba(0, 0, 0, 0.8)",
+            boxShadow: "3px 3px 10px 0px rgba(0, 0, 0, .5)",
+            position: "absolute",
+            right: "20px",
+            top: "20px",
+            zIndex: 9999999,
+            overflow: "auto",
+            boxSizing: "border-box",
+            paddingBottom: "20px"
+          }}
+        >
+          <div
+            style={{
+              boxSizing: "border-box",
+              padding: "20px"
+            }}
+          >
+            <h1
+              style={{
+                margin: 0,
+                padding: 0,
+                fontSize: "16px",
+                lineHeight: "16px",
+                color: "#16a085",
+                marginBottom: "10px"
+              }}
+            >
+              > llpage console
+            </h1>
+
+            <h3
+              style={{
+                margin: 0,
+                padding: 0,
+                fontSize: "12px",
+                lineHeight: "12px",
+                color: "#9b59b6",
+                marginBottom: "4px"
+              }}
+            >
+              {`当前设置的保活数量: ${ll.size}`}
+            </h3>
+
+            <h3
+              style={{
+                margin: 0,
+                padding: 0,
+                fontSize: "12px",
+                lineHeight: "12px",
+                color: "#3498db"
+              }}
+            >
+              {`实际当前链表长度: ${ll.pageList.size}`}
+            </h3>
+          </div>
+
+          <div
+            id="consolep"
+            style={{
+              padding: "0 20px",
+              boxSizing: "border-box"
+            }}
+          />
+        </div>
+
         {/* side bar */}
         <div
           style={{
@@ -302,10 +383,11 @@ class MultiTabExample extends Component {
             {mockData.map((i, idx) => {
               return (
                 <Button
+                  active={idx === this.state.activeIdx}
                   title={i.title}
                   onClick={() => {
                     // pass
-                    this._openPage(pages[idx]);
+                    this._openPage(pages[idx], idx);
                   }}
                   key={idx}
                 />
@@ -320,10 +402,7 @@ class MultiTabExample extends Component {
             marginLeft: "200px"
           }}
         >
-          <TabBar
-            dataSrc={this.state.openedTabs}
-            activeIdx={this.state.activeIdx}
-          />
+          <TabBar dataSrc={mockData} activeIdx={this.state.activeIdx} />
 
           {/* main 区域 */}
           <div
@@ -340,26 +419,7 @@ class MultiTabExample extends Component {
   }
 
   async componentDidMount() {
-    this._openPage(pages[0]);
-
-    // console.log("<====== 新建三个窗口 ======>");
-    // ll.open(page1);
-    // await sleep(5000);
-    // ll.open(page2);
-    // await sleep(5000);
-    // ll.open(page3);
-    // console.log("<====== 激活窗口 1 ======>");
-    // await sleep(5000);
-    // ll.open(page1);
-    // console.log("<====== 关闭窗口 3 ======>");
-    // await sleep(5000);
-    // ll.close(page3);
-    // console.log("<====== 关闭窗口 2 之外的窗口 ======>");
-    // await sleep(5000);
-    // ll.closeOthers(page2);
-    // console.log("<====== 全部关闭 ======>");
-    // await sleep(5000);
-    // // ll.closeAll();
+    this._openPage(pages[0], 0);
   }
 }
 
