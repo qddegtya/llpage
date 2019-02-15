@@ -78,14 +78,14 @@ class LLPageManager {
         // 如果存在该页面，并且也在运行中，则不做任何处理
         if (existingPage.isRunning) return
 
+        // 对目前在运行中的页面触发 onPause
+        this.runningPage.hooks.onPause()
+
         // A B C! D E
         // open A ->
         // A! B C D E
         // 对这个存在的页面重新激活，触发 onResume
         existingPage.hooks.onResume()
-
-        // 对目前在运行中的页面触发 onPause
-        this.runningPage.hooks.onPause()
 
         this.runningPage = existingPage
       } else {
@@ -93,25 +93,28 @@ class LLPageManager {
 
         // 如果不存在该 page
         // 则启用 LRU 策略进行淘汰
-        const oldestPage = this.lruMap.oldest
+        const oldestPage = this.lruMap.oldest.value
 
-        // 淘汰
+        // 淘汰掉一个老页面
         this._closePage(oldestPage)
+        // 并且将当前页面 pause
+        this.runningPage.hooks.onPause()
 
         // 将旧页面从缓存中删除
         this.lruMap.delete(this._genLruCacheKeyName(oldestPage))
         _lastDeletedindex = this.pageList.indexOf(oldestPage)
 
-        // 将旧页面从链表中删除
-        this.pageList.remove(_lastDeletedindex)
-
         // 唤起新页面
         this._openPage(page)
 
+        // 先将新页面插入到链表
+        this.pageList.insertBefore(page, _lastDeletedindex)
+
+        // 将旧页面从链表中删除
+        this.pageList.remove(_lastDeletedindex + 1)
+
         // 缓存更新
         this.lruMap.set(this._genLruCacheKeyName(page), page)
-        // 将页面插入到链表
-        this.pageList.insertBefore(page, _lastDeletedindex)
 
         // 变更 runningPage
         this.runningPage = page
