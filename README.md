@@ -2,9 +2,9 @@
 
 > 🚀 page operation model (in memory) with LRU & lifecycle strategy.
 
-![屏幕快照 2019-02-13 下午5.25.56.png](https://intranetproxy.alipay.com/skylark/lark/0/2019/png/1429/1550050126197-a6728f55-56a7-46f7-9427-ae0f56095c7b.png) 
+![model](https://user-images.githubusercontent.com/773248/52936637-b8803900-3397-11e9-834f-f5bb76776663.png) 
 
-# Quick Start
+### Quick Start
 
 ```javascript
 import { createLLPageManager, createPage } from 'llpage'
@@ -38,7 +38,7 @@ ll.closeOthers(testPage)
 ll.closeAll()
 ```
 
-# API
+### API
 
 ### top api
 
@@ -102,6 +102,8 @@ ll.closeAll()
 
 > 当页面对象曾经被打开过，并且当前处于 dead 状态中，这个时候被重新激活时执行
 
-# Run Example
+### Run Example
+
+![preview](https://user-images.githubusercontent.com/773248/52936756-1f055700-3398-11e9-843a-1899dba7c36a.gif)
 
 * [How to run](./examples/README.md)
