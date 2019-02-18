@@ -17,7 +17,7 @@
     "lifecycle",
     "lru"
   ],
-  "author": "tianyu.gty",
+  "author": "qddegtya",
   "license": "MIT",
   "devDependencies": {
     "@babel/cli": "^7.2.3",
