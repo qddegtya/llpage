@@ -72,7 +72,7 @@ const _createPage = (title, url) => ({
     this.mountNode.style.left = 0;
     this.mountNode.style.top = 0;
     this.mountNode.style.zIndex = -1;
-    this.mountNode.style.transform = "translate3d(0, -200%, 0)";
+    this.mountNode.style.transform = "translate3d(0, 200%, 0)";
     this.mountNode.style.transition = "transform 1s ease";
 
     this.rootNode.appendChild(this.mountNode);
@@ -257,6 +257,17 @@ class MultiTabExample extends Component {
     );
   }
 
+  _refreshPage(page, idx) {
+    this.setState(
+      {
+        activeIdx: idx
+      },
+      () => {
+        ll.refresh(page);
+      }
+    );
+  }
+
   render() {
     return (
       <div>
@@ -420,6 +431,13 @@ class MultiTabExample extends Component {
 
   async componentDidMount() {
     this._openPage(pages[0], 0);
+    _logToConsole("<====== 3s 后刷新页面 1 ======>");
+
+    setTimeout(() => {
+      this._refreshPage(pages[0], 0);
+
+      console.dir(ll);
+    }, 3000);
   }
 }
 

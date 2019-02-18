@@ -273,7 +273,17 @@ class LLPageManager {
   }
 
   refresh (page) {
-    // TODO
+    // 查找是否存在这个 page
+    const existingPage = this.findPage(page)
+
+    if (!existingPage) throw new Error('can not refresh nonexistent page.')
+
+    // 刷新页面不更新链表状态
+    this._closePage(page)
+    this._openPage(page)
+
+    // 更新缓存
+    this.lruMap.set(this._genLruCacheKeyName(page), page)
   }
 }
 
