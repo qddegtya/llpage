@@ -1,14 +1,14 @@
 {
   "name": "llpage",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "page operation model with LRU & lifecycle strategy.",
   "main": "./index.js",
   "files": [
     "lib"
   ],
   "repository": {
-    "type" : "git",
-    "url" : "https://github.com/qddegtya/llpage"
+    "type": "git",
+    "url": "https://github.com/qddegtya/llpage"
   },
   "scripts": {
     "test": "jest",
