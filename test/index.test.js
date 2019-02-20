@@ -9,5 +9,7 @@ describe("page operations", () => {
     });
   });
 
-  test("open a new page with empty", () => {});
+  test("open a new page with empty list", () => {
+    
+  });
 });

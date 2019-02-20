@@ -6,18 +6,23 @@
   "files": [
     "lib"
   ],
+  "repository": {
+    "type" : "git",
+    "url" : "https://github.com/qddegtya/llpage"
+  },  
   "scripts": {
     "test": "jest",
     "build": "babel src --out-dir lib",
-    "lint": "eslint **/*.js --fix",
-    "dev": "babel src --out-dir lib --watch"
+    "lint": "./node_modules/.bin/eslint src/*.js --fix",
+    "dev": "babel src --out-dir lib --watch",
+    "prepublishOnly": "npm run build"
   },
   "keywords": [
     "page",
     "lifecycle",
     "lru"
   ],
-  "author": "qddegtya",
+  "author": "xiaoa",
   "license": "MIT",
   "devDependencies": {
     "@babel/cli": "^7.2.3",

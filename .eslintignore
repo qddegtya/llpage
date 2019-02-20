@@ -1,3 +1,3 @@
-lib/*.js
-test/*.js
-jest.config.js
+/lib/*.js
+/test/*.js
+/jest.config.js

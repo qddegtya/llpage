@@ -39,39 +39,39 @@ class Page {
     }
   }
 
-  get isDead () {
+  get isDead() {
     return this._isDead
   }
 
-  _resurgence () {
+  _resurgence() {
     this._isDead = false
   }
 
-  _kill () {
+  _kill() {
     this._isDead = true
   }
 
-  _addCount () {
+  _addCount() {
     this._count = this._count + 1
   }
 
-  bindContext (ctx) {
+  bindContext(ctx) {
     this.ctx = ctx
   }
 
-  set ctx (val) {
+  set ctx(val) {
     this._ctx = val
   }
 
-  get ctx () {
+  get ctx() {
     return this._ctx
   }
 
-  get id () {
+  get id() {
     return this._id
   }
 
-  get hasBeenOpened () {
+  get hasBeenOpened() {
     return this._count > 0
   }
 
