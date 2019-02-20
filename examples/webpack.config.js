@@ -55,7 +55,7 @@ if (module.parent === null) {
 
     resolve: {
       alias: {
-        'llpage': path.join(__dirname, '..', 'src/index.js')
+        'llpage': path.join(__dirname, '..', 'index.js')
       }
     },
 

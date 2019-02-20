@@ -2,7 +2,7 @@
   "name": "llpage",
   "version": "1.0.0",
   "description": "page operation model with LRU & lifecycle strategy.",
-  "main": "lib/index.js",
+  "main": "./index.js",
   "files": [
     "lib"
   ],
