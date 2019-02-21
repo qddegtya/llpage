@@ -1,5 +1,5 @@
 import { NOOP, DATA_KEY } from './constants'
-import XAJS from 'xajs'
+import AJS from 'xajs'
 
 const defaultOpts = {
   [DATA_KEY]: {},
@@ -14,7 +14,7 @@ const defaultOpts = {
 
 const LIFE_CYCLE_HOOKS = Object.keys(defaultOpts).filter(k => k !== DATA_KEY)
 
-const Page = XAJS.core.base.Class(function() {
+const Page = AJS.core.base.Class(function() {
   // private
   let _ctx = null,
     _count = 0,
