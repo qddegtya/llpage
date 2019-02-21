@@ -44,6 +44,7 @@
   },
   "dependencies": {
     "@humanwhocodes/circular-doubly-linked-list": "^2.0.2",
-    "lru_map": "^0.3.3"
+    "lru_map": "^0.3.3",
+    "xajs": "^1.0.3"
   }
 }
