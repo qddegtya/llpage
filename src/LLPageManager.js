@@ -2,7 +2,7 @@ import { MAX_SIZE } from './constants'
 import Page from './Page'
 import { CircularDoublyLinkedList } from '@humanwhocodes/circular-doubly-linked-list'
 import { LRUMap } from 'lru_map'
-const AJS = require('xajs')
+import { functional } from 'xajs'
 
 // 对于动态伸缩的容器，用 size 属性可能更好一些
 const defaultOpts = {
@@ -40,7 +40,7 @@ class LLPageManager {
   }
 
   _rsr(page) {
-    const _invoke = AJS.functional.helper
+    const _invoke = functional.helper
       .intercepter(page.hooks.onResume)
       .before(page.hooks.onRestart)
       .before(page.hooks.onStart).$asyncRunner
@@ -50,7 +50,7 @@ class LLPageManager {
   }
 
   _csr(page) {
-    const _invoke = AJS.functional.helper
+    const _invoke = functional.helper
       .intercepter(page.hooks.onResume)
       .before(page.hooks.onCreate)
       .before(page.hooks.onStart).$asyncRunner
@@ -72,7 +72,7 @@ class LLPageManager {
   }
 
   _closePage(page) {
-    const _invoke = AJS.functional.helper
+    const _invoke = functional.helper
       .intercepter(page.hooks.onDestroy)
       .before(page.hooks.onStop).$asyncRunner
 
@@ -81,7 +81,7 @@ class LLPageManager {
   }
 
   switchToPage(page) {
-    const _invoke = AJS.functional.helper
+    const _invoke = functional.helper
       .intercepter(page.hooks.onResume)
       .before(this.runningPage.hooks.onPause).$asyncRunner
 
