@@ -62,25 +62,25 @@ interface PageOption<T> {
   data: T;
   
   /** 在页面对象被激活时执行 */
-  onCreate(): void;
+  onCreate(): Promise;
 
   /** 在页面对象被激活后，即将开始 running 时执行 */
-  onStart(): void;
+  onStart(): Promise;
 
   /** 在页面对象被隐藏后重新激活时执行 */
-  onResume(): void;
+  onResume(): Promise;
 
   /** 在页面对象被隐藏时执行 */
-  onPause(): void;
+  onPause(): Promise;
 
   /** 在页面对象被销毁前执行 */
-  onStop(): void;
+  onStop(): Promise;
 
   /** 在页面对象被销毁时执行 */
-  onDestroy(): void;
+  onDestroy(): Promise;
 
   /** 当页面对象曾经被打开过，并且当前处于 dead 状态中，这个时候被重新激活时执行 */
-  onRestart(): void;
+  onRestart(): Promise;
 }
 
 /**

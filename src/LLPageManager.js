@@ -2,6 +2,7 @@ import { MAX_SIZE } from './constants'
 import Page from './Page'
 import { CircularDoublyLinkedList } from '@humanwhocodes/circular-doubly-linked-list'
 import { LRUMap } from 'lru_map'
+const AJS = require('xajs')
 
 // 对于动态伸缩的容器，用 size 属性可能更好一些
 const defaultOpts = {
@@ -38,28 +39,53 @@ class LLPageManager {
     return `llpage-${page.id}`
   }
 
-  _openPage (page) {
+  _rsr(page) {
+    const _invoke = AJS.functional.helper
+      .intercepter(page.hooks.onResume)
+      .before(page.hooks.onRestart)
+      .before(page.hooks.onStart).$asyncRunner
+
+    // RSR
+    _invoke()
+  }
+
+  _csr(page) {
+    const _invoke = AJS.functional.helper
+      .intercepter(page.hooks.onResume)
+      .before(page.hooks.onCreate)
+      .before(page.hooks.onStart).$asyncRunner
+
+    // CSR
+    _invoke()
+  }
+
+  _openPage(page) {
     // 被打开过且当前状态是销毁状态
     if (page.hasBeenOpened && page.isDead) {
-      // RSR
-      page.hooks.onRestart()
-      page.hooks.onStart()
-      page.hooks.onResume()
+      this._rsr(page)
     } else {
-      // CSR
-      page.hooks.onCreate()
-      page.hooks.onStart()
-      page.hooks.onResume()
+      this._csr(page)
     }
 
     page._resurgence()
     page._addCount()
   }
 
-  _closePage (page) {
-    page.hooks.onStop()
-    page.hooks.onDestroy()
+  _closePage(page) {
+    const _invoke = AJS.functional.helper
+      .intercepter(page.hooks.onDestroy)
+      .before(page.hooks.onStop).$asyncRunner
+
+    _invoke()
     page._kill()
+  }
+
+  switchToPage(page) {
+    const _invoke = AJS.functional.helper
+      .intercepter(page.hooks.onResume)
+      .before(this.runningPage.hooks.onPause).$asyncRunner
+
+    _invoke()
   }
 
   open(page) {
@@ -79,14 +105,11 @@ class LLPageManager {
         if (existingPage.isRunning) return
 
         // 对目前在运行中的页面触发 onPause
-        this.runningPage.hooks.onPause()
-
         // A B C! D E
         // open A ->
         // A! B C D E
         // 对这个存在的页面重新激活，触发 onResume
-        existingPage.hooks.onResume()
-
+        this.switchToPage(existingPage)
         this.runningPage = existingPage
       } else {
         let _lastDeletedindex
@@ -136,10 +159,7 @@ class LLPageManager {
       } else {
         // 如果此前存在这个 page
         if (existingPage) {
-          this.runningPage.hooks.onPause()
-          // 则只需要触发 onResume
-          existingPage.hooks.onResume()
-          
+          this.switchToPage(existingPage)
           this.runningPage = existingPage
         } else {
           // A B C!
@@ -265,14 +285,14 @@ class LLPageManager {
 
     // 将余下的节点全部从链表和 lru 中清除
     this._clearRemainingStatus()
-    
+
     // 再将自己添加回到链表中
     this.pageList.add(page)
 
     this.runningPage = page
   }
 
-  refresh (page) {
+  refresh(page) {
     // 查找是否存在这个 page
     const existingPage = this.findPage(page)
 

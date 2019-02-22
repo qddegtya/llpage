@@ -59,8 +59,10 @@ const _createPage = (title, url) => ({
     url
   },
 
-  onCreate() {
-    _logToConsole(`page: ${this.id} 将被创建`);
+  async onCreate() {
+    _logToConsole(`500ms 后 page: ${this.id} 将被创建`);
+
+    await sleep(500);
 
     this.rootNode = document.getElementById("main");
 
@@ -78,7 +80,7 @@ const _createPage = (title, url) => ({
     this.rootNode.appendChild(this.mountNode);
   },
 
-  onStart() {
+  async onStart() {
     _logToConsole(`page: ${this.id} 将被启动`);
     // this.mountNode.style.display = "block";
     this.mountNode.style.transform = "translate3d(0, 0, 0)";
@@ -94,7 +96,7 @@ const _createPage = (title, url) => ({
     this.mountNode.appendChild(iframeNode);
   },
 
-  onPause() {
+  async onPause() {
     _logToConsole(`page ${this.id} 被暂停`);
 
     // this.mountNode.style.display = "none";
@@ -102,7 +104,7 @@ const _createPage = (title, url) => ({
     this.mountNode.style.zIndex = -1;
   },
 
-  onResume() {
+  async onResume() {
     _logToConsole(`page ${this.id} 重新激活`);
 
     // this.mountNode.style.display = "block";
@@ -110,7 +112,7 @@ const _createPage = (title, url) => ({
     this.mountNode.style.zIndex = 10;
   },
 
-  onStop() {
+  async onStop() {
     _logToConsole(`page ${this.id} 停止`);
 
     this.mountNode.style.transform = "translate3d(0, -200%, 0)";
@@ -118,14 +120,14 @@ const _createPage = (title, url) => ({
     // this.mountNode.style.display = "none";
   },
 
-  onDestroy() {
+  async onDestroy() {
     _logToConsole(`page ${this.id} 将被销毁`);
 
     // 销毁自己
     this.rootNode.removeChild(this.mountNode);
   },
 
-  onRestart() {
+  async onRestart() {
     _logToConsole(`page ${this.id} 重启`);
 
     this.rootNode = document.getElementById("main");
@@ -431,13 +433,13 @@ class MultiTabExample extends Component {
 
   async componentDidMount() {
     this._openPage(pages[0], 0);
-    _logToConsole("<====== 3s 后刷新页面 1 ======>");
+    // _logToConsole("<====== 3s 后刷新页面 1 ======>");
 
-    setTimeout(() => {
-      this._refreshPage(pages[0], 0);
+    // setTimeout(() => {
+    //   this._refreshPage(pages[0], 0);
 
-      console.dir(ll);
-    }, 3000);
+    //   console.dir(ll);
+    // }, 3000);
   }
 }
 

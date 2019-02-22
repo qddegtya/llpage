@@ -1,5 +1,6 @@
 import { NOOP, DATA_KEY } from './constants'
-import AJS from 'xajs'
+
+const AJS = require('xajs')
 
 const defaultOpts = {
   [DATA_KEY]: {},
@@ -21,13 +22,13 @@ const Page = AJS.core.base.Class(function() {
     _isDead = false
 
   return {
-    $ctor: function(id) {
+    $ctor: function(id, opts) {
       this.id = id
       this.hooks = {}
       this.$_init(Object.assign({}, defaultOpts, opts))
     },
 
-    $_init: function() {
+    $_init: function(opts) {
       for (let k in opts) {
         if (LIFE_CYCLE_HOOKS.indexOf(k) >= 0) {
           const hookFunction = opts[k]
