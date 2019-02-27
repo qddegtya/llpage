@@ -134,10 +134,53 @@ describe("page operations", () => {
   });
 
   // 关闭其他页面
-  test("close other pages", () => {});
+  test("close other pages", async () => {
+    const _page = pages[0];
+    const _page2 = pages[2];
+    const _page3 = pages[3];
+
+    // ====== 1s 后关闭除第一个外的其他页面 ======
+    await functional.helper.sleep(1000);
+    ll.closeOthers(_page);
+
+    expect(_page.isRunning).toBe(true);
+    expect(ll.lruMap.size).toBe(1);
+
+    expect(_page2.hooks.onStop).toBeCalled();
+    expect(_page2.hooks.onDestroy).toBeCalled();
+
+    expect(_page3.hooks.onStop).toBeCalled();
+    expect(_page3.hooks.onDestroy).toBeCalled();
+
+    expect(_page.hooks.onResume).toBeCalled();
+  });
+
+  test("refresh current page", async () => {
+    const _page = pages[0];
+    ll.refresh(_page);
+
+    expect(_page.isRunning).toBe(true);
+    expect(ll.lruMap.size).toBe(1);
+
+    expect(_page.hooks.onStop).toBeCalled();
+    expect(_page.hooks.onDestroy).toBeCalled();
+
+    expect(_page.hooks.onRestart).toBeCalled();
+    expect(_page.hooks.onStart).toBeCalled();
+    expect(_page.hooks.onResume).toBeCalled();
+  });
 
   // 关闭其他页面
-  test("close all pages", () => {});
+  test("close all pages", () => {
+    const _page = pages[0];
+    ll.closeAll(_page);
+
+    expect(ll.runningPage).toBe(null);
+    expect(ll.lruMap.size).toBe(0);
+
+    expect(_page.hooks.onStop).toBeCalled();
+    expect(_page.hooks.onDestroy).toBeCalled();
+  });
 
   afterAll(() => {
     ll = null;
