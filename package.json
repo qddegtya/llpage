@@ -4,7 +4,9 @@
   "description": "page operation model with LRU & lifecycle strategy.",
   "main": "./index.js",
   "files": [
-    "lib"
+    "lib",
+    "index.js",
+    "index.d.ts"
   ],
   "repository": {
     "type": "git",
