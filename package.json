@@ -11,7 +11,7 @@
     "url": "https://github.com/qddegtya/llpage"
   },
   "scripts": {
-    "test": "jest",
+    "test": "jest --coverage",
     "build": "babel src --out-dir lib",
     "lint": "./node_modules/.bin/eslint src/*.js --fix",
     "dev": "babel src --out-dir lib --watch",
@@ -45,6 +45,6 @@
   "dependencies": {
     "@humanwhocodes/circular-doubly-linked-list": "^2.0.2",
     "lru_map": "^0.3.3",
-    "xajs": "^1.0.6"
+    "xajs": "1.0.x"
   }
 }
