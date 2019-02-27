@@ -49,6 +49,12 @@ describe("page operations", () => {
       });
   });
 
+  test("page instance check", () => {
+    expect(() => {
+      ll.open({});
+    }).toThrowError(/page must be instanceof/);
+  });
+
   // 空队列状态开启一个新页面
   test("open new page with empty status", async () => {
     const _page0 = pages[0];
