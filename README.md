@@ -8,7 +8,7 @@
 
 > 🚀 page operation model (in memory) with LRU & lifecycle strategy.
 
-[![All Contributors](https://img.shields.io/badge/all_contributors-1-orange.svg?style=flat-square)](#contributors) ![Travis (.org) branch](https://img.shields.io/travis/qddegtya/llpage/master.svg?style=flat-square) ![Codecov](https://img.shields.io/codecov/c/github/qddegtya/llpage.svg?style=flat-square) ![npm](https://img.shields.io/npm/v/llpage.svg?style=flat-square)
+[![All Contributors](https://img.shields.io/badge/all_contributors-1-orange.svg)](#contributors) ![Travis (.org) branch](https://img.shields.io/travis/qddegtya/llpage/master.svg) [![Coverage Status](https://coveralls.io/repos/github/qddegtya/llpage/badge.svg?branch=master)](https://coveralls.io/github/qddegtya/llpage?branch=master) ![npm](https://img.shields.io/npm/v/llpage.svg)
 
 ![model](https://user-images.githubusercontent.com/773248/52936637-b8803900-3397-11e9-834f-f5bb76776663.png) 
 
