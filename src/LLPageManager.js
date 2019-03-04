@@ -198,13 +198,11 @@ class LLPageManager {
 
     // 如果只有一个节点
     if (this.pageList.size === 1) {
-      this.runningPage = null
       // 直接关闭即可
       this._closePage(existingPage)
-    } else {
-      // 先关闭
-      this._closePage(existingPage)
 
+      this.runningPage = null
+    } else {
       // 获取链表位置
       const _idx = this.pageList.indexOf(existingPage)
 
@@ -227,6 +225,9 @@ class LLPageManager {
     this.pageList.remove(this.pageList.indexOf(page))
     // 从缓存里删除
     this.lruMap.delete(this._genLruCacheKeyName(page))
+
+    // 先关闭
+    this._closePage(existingPage)
   }
 
   closeAll() {
