@@ -81,6 +81,9 @@ class LLPageManager {
   }
 
   switchToPage(page) {
+    // 如果当前切换的页面就是正在运行中的页面
+    if (page.isRunning) return
+
     const _invoke = functional.helper
       .intercepter(page.hooks.onResume)
       .before(this.runningPage.hooks.onPause).$asyncRunner
