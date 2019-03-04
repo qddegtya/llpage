@@ -301,8 +301,13 @@ class LLPageManager {
     if (!existingPage) throw new Error('can not refresh nonexistent page.')
 
     // 刷新页面不更新链表状态
-    this._closePage(page)
-    this._openPage(page)
+    // 不更新 runningPage
+    // 直接头尾 hook 执行
+    const _invoke = functional.helper
+      .intercepter(page.hooks.onCreate)
+      .before(page.hooks.onDestroy).$asyncRunner
+
+    _invoke()
 
     // 更新缓存
     this.lruMap.set(this._genLruCacheKeyName(page), page)
