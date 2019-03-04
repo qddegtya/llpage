@@ -219,15 +219,15 @@ class LLPageManager {
         this.runningPage = _nextNode
         _nextNode.hooks.onResume()
       }
+
+      // 关闭
+      this._closePage(existingPage)
     }
 
     // 从链表里将这个 page 删除
     this.pageList.remove(this.pageList.indexOf(page))
     // 从缓存里删除
     this.lruMap.delete(this._genLruCacheKeyName(page))
-
-    // 先关闭
-    this._closePage(existingPage)
   }
 
   closeAll() {
