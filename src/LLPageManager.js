@@ -130,6 +130,9 @@ class LLPageManager {
         this.lruMap.delete(this._genLruCacheKeyName(oldestPage))
         _lastDeletedindex = this.pageList.indexOf(oldestPage)
 
+        // 变更 runningPage
+        this.runningPage = page
+
         // 唤起新页面
         this._openPage(page)
 
@@ -141,9 +144,6 @@ class LLPageManager {
 
         // 缓存更新
         this.lruMap.set(this._genLruCacheKeyName(page), page)
-
-        // 变更 runningPage
-        this.runningPage = page
       }
     } else {
       this.lruMap.set(this._genLruCacheKeyName(page), page)
@@ -171,9 +171,8 @@ class LLPageManager {
           this.runningPage.hooks.onPause()
 
           // 依次触发 onCreate && onStart
-          this._openPage(page)
-
           this.runningPage = page
+          this._openPage(page)
 
           // 插入到链表尾部
           this.pageList.add(page)
@@ -199,10 +198,9 @@ class LLPageManager {
 
     // 如果只有一个节点
     if (this.pageList.size === 1) {
+      this.runningPage = null
       // 直接关闭即可
       this._closePage(existingPage)
-
-      this.runningPage = null
     } else {
       // 先关闭
       this._closePage(existingPage)
@@ -214,14 +212,14 @@ class LLPageManager {
       if (_idx === this.pageList.size - 1) {
         // 取前链表节点
         const _preNode = this.pageList.get(_idx - 1)
-        _preNode.hooks.onResume()
         this.runningPage = _preNode
+        _preNode.hooks.onResume()
       } else {
         // 默认移除后，后续节点前移
         // 取后链表节点
         const _nextNode = this.pageList.get(_idx + 1)
-        _nextNode.hooks.onResume()
         this.runningPage = _nextNode
+        _nextNode.hooks.onResume()
       }
     }
 
@@ -234,6 +232,8 @@ class LLPageManager {
   closeAll() {
     if (this.isEmpty) return
 
+    this.runningPage = null
+
     // 依次直接关闭，过程中已不需要再触发 onResume 等 hook
     this._closeRemainingPages()
 
@@ -242,8 +242,6 @@ class LLPageManager {
 
     // 清空链表
     this.pageList.clear()
-
-    this.runningPage = null
   }
 
   _clearRemainingStatus() {
@@ -277,6 +275,8 @@ class LLPageManager {
     // 并且此时只有一个节点
     if (page.isRunning && this.pageList.size === 1) return
 
+    this.runningPage = page
+
     // 只有命中非 running 目标，才触发 onResume
     if (!page.isRunning) page.hooks.onResume()
 
@@ -291,8 +291,6 @@ class LLPageManager {
 
     // 再将自己添加回到链表中
     this.pageList.add(page)
-
-    this.runningPage = page
   }
 
   refresh(page) {
