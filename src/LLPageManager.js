@@ -120,11 +120,12 @@ class LLPageManager {
         // 如果不存在该 page
         // 则启用 LRU 策略进行淘汰
         const oldestPage = this.lruMap.oldest.value
+        oldestPage.eliminate()
 
-        // 淘汰掉一个老页面
-        this._closePage(oldestPage)
         // 并且将当前页面 pause
         this.runningPage.hooks.onPause()
+        // 淘汰掉一个老页面
+        this._closePage(oldestPage)
 
         // 将旧页面从缓存中删除
         this.lruMap.delete(this._genLruCacheKeyName(oldestPage))
