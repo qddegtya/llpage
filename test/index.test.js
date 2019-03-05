@@ -135,7 +135,6 @@ describe("page operations", () => {
     expect(ll.lruMap.size).toBe(TEST_LL_SIZE);
 
     expect(_oldestPage).toBe(pages[1]);
-    expect(_oldestPage.isEliminated).toBe(true);
     expect(_oldestPage.hooks.onStop).toBeCalled();
     expect(_oldestPage.hooks.onDestroy).toBeCalled();
   });

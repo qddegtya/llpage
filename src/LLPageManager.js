@@ -120,12 +120,9 @@ class LLPageManager {
         // 如果不存在该 page
         // 则启用 LRU 策略进行淘汰
         const oldestPage = this.lruMap.oldest.value
-        oldestPage.eliminate()
 
         // 并且将当前页面 pause
         this.runningPage.hooks.onPause()
-        // 淘汰掉一个老页面
-        this._closePage(oldestPage)
 
         // 将旧页面从缓存中删除
         this.lruMap.delete(this._genLruCacheKeyName(oldestPage))
@@ -134,14 +131,16 @@ class LLPageManager {
         // 变更 runningPage
         this.runningPage = page
 
+        // 淘汰掉一个老页面
+        this._closePage(oldestPage)
         // 唤起新页面
         this._openPage(page)
 
-        // 先将新页面插入到链表
-        this.pageList.insertBefore(page, _lastDeletedindex)
-
         // 将旧页面从链表中删除
-        this.pageList.remove(_lastDeletedindex + 1)
+        this.pageList.remove(_lastDeletedindex)
+
+        // 先将新页面插入到链表
+        this.pageList.add(page)
 
         // 缓存更新
         this.lruMap.set(this._genLruCacheKeyName(page), page)
@@ -206,19 +205,20 @@ class LLPageManager {
     } else {
       // 获取链表位置
       const _idx = this.pageList.indexOf(existingPage)
+      const isRunningPage = this.runningPage === existingPage
 
       // 如果此时在尾部
       if (_idx === this.pageList.size - 1) {
         // 取前链表节点
         const _preNode = this.pageList.get(_idx - 1)
-        this.runningPage = _preNode
-        _preNode.hooks.onResume()
+        isRunningPage &&
+          ((this.runningPage = _preNode), _preNode.hooks.onResume())
       } else {
         // 默认移除后，后续节点前移
         // 取后链表节点
         const _nextNode = this.pageList.get(_idx + 1)
-        this.runningPage = _nextNode
-        _nextNode.hooks.onResume()
+        isRunningPage &&
+          ((this.runningPage = _nextNode), _nextNode.hooks.onResume())
       }
 
       // 关闭

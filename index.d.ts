@@ -19,9 +19,6 @@ interface Page {
 
   /** 是否在运行中 */
   readonly isRunning: boolean;
-
-  /** 是否被淘汰过 */
-  readonly isEliminated: boolean;
 }
 
 interface PageManager {  

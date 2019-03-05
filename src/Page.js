@@ -18,8 +18,7 @@ const Page = core.base.Class(function() {
   // private
   let _ctx = null,
     _count = 0,
-    _isDead = false,
-    eliminatedCount = 0
+    _isDead = false
 
   return {
     $ctor: function(id, opts) {
@@ -69,14 +68,6 @@ const Page = core.base.Class(function() {
 
     get ctx() {
       return _ctx
-    },
-
-    eliminate() {
-      eliminatedCount = eliminatedCount + 1
-    },
-
-    get isEliminated () {
-      return eliminatedCount > 0
     },
 
     get hasBeenOpened() {
