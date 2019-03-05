@@ -277,10 +277,10 @@ class LLPageManager {
     // 并且此时只有一个节点
     if (page.isRunning && this.pageList.size === 1) return
 
-    this.runningPage = page
-
     // 只有命中非 running 目标，才触发 onResume
     if (!page.isRunning) page.hooks.onResume()
+
+    this.runningPage = page
 
     // 先将自己从链表移除
     this.pageList.remove(this.pageList.indexOf(page))
