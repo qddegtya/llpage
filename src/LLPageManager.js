@@ -182,6 +182,15 @@ class LLPageManager {
     return this.pageList.indexOf(page) >= 0 ? page : undefined
   }
 
+  _autoResumePage(node) {
+    if (node.isEliminated) {
+      this.open(node)
+    } else {
+      this.runningPage = node
+      node.hooks.onResume()
+    }
+  }
+
   close(page) {
     if (this.isEmpty) return
 
@@ -215,14 +224,12 @@ class LLPageManager {
       if (_idx === this.pageList.size - 1) {
         // 取前链表节点
         const _preNode = this.pageList.get(_idx - 1)
-        isRunningPage &&
-          ((this.runningPage = _preNode), _preNode.hooks.onResume())
+        isRunningPage && this._autoResumePage(_preNode)
       } else {
         // 默认移除后，后续节点前移
         // 取后链表节点
         const _nextNode = this.pageList.get(_idx + 1)
-        isRunningPage &&
-          ((this.runningPage = _nextNode), _nextNode.hooks.onResume())
+        isRunningPage && this._autoResumePage(_nextNode)
       }
 
       // 关闭
