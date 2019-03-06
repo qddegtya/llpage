@@ -188,8 +188,7 @@ class LLPageManager {
   }
 
   _autoResumePage(node, isRunningPage) {
-    if (node.isEliminated) {
-      node.unEliminate()
+    if (node.hasBeenEliminated) {
       this.open(node)
     } else {
       isRunningPage && ((this.runningPage = node), node.hooks.onResume())
@@ -277,6 +276,7 @@ class LLPageManager {
       if (pageNode.hasBeenEliminated) {
         // 只要是曾经被淘汰过的页面，都只触发 onStop
         // 只触发 onStop
+        pageNode.unEliminate()
         pageNode.hooks.onStop()
       } else {
         this._closePage(pageNode)
@@ -291,9 +291,6 @@ class LLPageManager {
     page.bindContext(this)
 
     if (page.isEliminated) {
-      page.unEliminate()
-
-      // 此时因为已经 unEliminate
       // 将自己加入白名单
       this.pageList.remove(this.pageList.indexOf(page))
 
@@ -332,7 +329,7 @@ class LLPageManager {
   }
 
   refresh(page) {
-    if (page.isEliminated) {
+    if (page.hasBeenEliminated) {
       this.open(page)
       return
     }
