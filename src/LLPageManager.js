@@ -184,6 +184,7 @@ class LLPageManager {
 
   _autoResumePage(node) {
     if (node.isEliminated) {
+      node.isEliminated = false
       this.open(node)
     } else {
       this.runningPage = node
