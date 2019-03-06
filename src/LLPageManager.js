@@ -93,6 +93,8 @@ class LLPageManager {
       .before(this.runningPage.hooks.onPause).$asyncRunner
 
     _invoke()
+
+    this.runningPage = page
   }
 
   open(page) {
@@ -117,7 +119,6 @@ class LLPageManager {
         // A! B C D E
         // 对这个存在的页面重新激活，触发 onResume
         this.switchToPage(existingPage)
-        this.runningPage = existingPage
       } else {
         // 如果不存在该 page
         // 则启用 LRU 策略进行淘汰
@@ -135,18 +136,30 @@ class LLPageManager {
         // 淘汰掉一个老页面
         // 淘汰的老页面只触发 onDestroy
         oldestPage.eliminate()
-        oldestPage.hooks.onDestroy()
+
+        // 幂等操作
+        this.lruMap.size > 0 && oldestPage.hooks.onDestroy()
 
         // 唤起新页面
         this._openPage(page)
 
         // 先将新页面插入到链表
-        this.pageList.add(page)
+        // 之前被淘汰过的不再往 pageList 添加
+        // 以保证队列长度的准确性
+        !page.hasBeenEliminated && this.pageList.add(page)
 
         // 缓存更新
         this.lruMap.set(this._genLruCacheKeyName(page), page)
       }
     } else {
+      // 队列没有满还有一种情况:
+      // 关闭按钮向前计算时遇到淘汰态
+      if (page.isEliminated) {
+        this.runningPage = page
+        this._openPage(page)
+        return
+      }
+
       this.lruMap.set(this._genLruCacheKeyName(page), page)
 
       // 没有满的时候应该是依次插入到链表中去的
@@ -164,7 +177,6 @@ class LLPageManager {
         // 如果此前存在这个 page
         if (existingPage) {
           this.switchToPage(existingPage)
-          this.runningPage = existingPage
         } else {
           // A B C!
           // open D ->
@@ -290,8 +302,19 @@ class LLPageManager {
     page.bindContext(this)
 
     if (page.isEliminated) {
-      this.open(page)
+      // 先移除自己
+      this.pageList.remove(this.pageList.indexOf(page))
+
+      // 关闭其他
       this._closeRemainingPages()
+
+      // 继续推入 lru 队列
+      this.open(page)
+
+      // 由于该页面曾被淘汰过，所以不会再被推入 pageList
+      // 所以这里手动加入
+      this.pageList.add(page)
+
       return
     }
 
