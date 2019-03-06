@@ -19,12 +19,12 @@ class LLPageManager {
 
   // 是否已满
   get isFull() {
-    return this.size === this.pageList.size
+    return this.size <= this.pageList.size
   }
 
   // 是否为空
   get isEmpty() {
-    return this.pageList.size === 0
+    return this.pageList.size <= 0
   }
 
   _checkPageIns(page) {
@@ -115,8 +115,6 @@ class LLPageManager {
         this.switchToPage(existingPage)
         this.runningPage = existingPage
       } else {
-        let _lastDeletedindex
-
         // 如果不存在该 page
         // 则启用 LRU 策略进行淘汰
         const oldestPage = this.lruMap.oldest.value
@@ -126,18 +124,17 @@ class LLPageManager {
 
         // 将旧页面从缓存中删除
         this.lruMap.delete(this._genLruCacheKeyName(oldestPage))
-        _lastDeletedindex = this.pageList.indexOf(oldestPage)
 
         // 变更 runningPage
         this.runningPage = page
 
         // 淘汰掉一个老页面
-        this._closePage(oldestPage)
+        // 淘汰的老页面只触发 onDestroy
+        oldestPage.isEliminated = true
+        oldestPage.hooks.onDestroy()
+
         // 唤起新页面
         this._openPage(page)
-
-        // 将旧页面从链表中删除
-        this.pageList.remove(_lastDeletedindex)
 
         // 先将新页面插入到链表
         this.pageList.add(page)
@@ -190,6 +187,13 @@ class LLPageManager {
 
     this._checkPageIns(page)
     page.bindContext(this)
+
+    // 如果已经淘汰过了
+    if (page.isEliminated) {
+      page.isEliminated = false
+      page.hooks.onStop()
+      return
+    }
 
     // 查找是否存在这个 page
     const existingPage = this.findPage(page)
@@ -258,7 +262,13 @@ class LLPageManager {
     // 从尾部开始执行
     const remainingPages = [...this.pageList.reverse()]
     remainingPages.forEach(pageNode => {
-      this._closePage(pageNode)
+      if (pageNode.isEliminated) {
+        // 如果是淘汰的页面
+        // 只触发 onStop
+        pageNode.hooks.onStop()
+      } else {
+        this._closePage(pageNode)
+      }
     })
   }
 
@@ -267,6 +277,20 @@ class LLPageManager {
 
     this._checkPageIns(page)
     page.bindContext(this)
+
+    if (page.isEliminated) {
+      page.isEliminated = false
+
+      // 此时因为 isEliminated 已经被标记为 false
+      // 将自己加入白名单，以免误伤
+      this.pageList.remove(this.pageList.indexOf(page))
+
+      this._closeRemainingPages()
+      this._clearRemainingStatus()
+
+      this.open(page)
+      return
+    }
 
     // 查找是否存在这个 page
     const existingPage = this.findPage(page)
@@ -296,6 +320,12 @@ class LLPageManager {
   }
 
   refresh(page) {
+    if (page.isEliminated) {
+      page.isEliminated = false
+      this.open(page)
+      return
+    }
+
     // 查找是否存在这个 page
     const existingPage = this.findPage(page)
 
