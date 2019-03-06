@@ -113,7 +113,7 @@ class LLPageManager {
 
     // 如果链表已达到保活最大长度值
     if (this.isFull) {
-      if (existingPage) {
+      if (existingPage && !existingPage.isEliminated) {
         // A B C! D E
         // open C
         // 如果存在该页面，并且也在运行中，则不做任何处理
@@ -143,7 +143,8 @@ class LLPageManager {
         // 淘汰的老页面只触发 onDestroy
         oldestPage.eliminate()
 
-        needDestroy && oldestPage.hooks.onDestroy() && oldestPage._kill()
+        needDestroy && oldestPage.hooks.onDestroy()
+        oldestPage._kill()
 
         // 唤起新页面
         this._openPage(page)
@@ -165,6 +166,9 @@ class LLPageManager {
         this.runningPage.hooks.onPause()
         this.runningPage = page
         this._openPage(page)
+
+        // 缓存更新
+        this.lruMap.set(this._genLruCacheKeyName(page), page)
         return
       }
 
@@ -353,6 +357,9 @@ class LLPageManager {
   refresh(page) {
     if (page.isEliminated) {
       this.open(page)
+
+      // 缓存更新
+      this.lruMap.set(this._genLruCacheKeyName(page), page)
       return
     }
 
