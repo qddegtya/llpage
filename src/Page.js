@@ -15,15 +15,15 @@ const defaultOpts = {
 const LIFE_CYCLE_HOOKS = Object.keys(defaultOpts).filter(k => k !== DATA_KEY)
 
 const Page = core.base.Class(function() {
-  // private
-  let _ctx = null,
-    _count = 0,
-    _isDead = false,
-    _isEliminated = false,
-    _eliminationCount = 0
-
   return {
     $ctor: function(id, opts) {
+      // private
+      (this._ctx = null),
+      (this._count = 0),
+      (this._isDead = false),
+      (this._isEliminated = false),
+      (this._eliminationCount = 0)
+
       this.id = id
       this.hooks = {}
       this.$_init(Object.assign({}, defaultOpts, opts))
@@ -44,41 +44,41 @@ const Page = core.base.Class(function() {
       }
     },
 
-    eliminate () {
-      _isEliminated = true,
-      _eliminationCount = _eliminationCount + 1
+    eliminate() {
+      (this._isEliminated = true),
+      (this._eliminationCount = this._eliminationCount + 1)
     },
 
-    unEliminate () {
-      _isEliminated = false
+    unEliminate() {
+      this._isEliminated = false
     },
 
-    get isEliminated () {
-      return _isEliminated
+    get isEliminated() {
+      return this._isEliminated
     },
 
-    get hasBeenEliminated () {
-      return _eliminationCount > 0
+    get hasBeenEliminated() {
+      return this._eliminationCount > 0
     },
 
-    get eliminationCount () {
-      return _eliminationCount
+    get eliminationCount() {
+      return this._eliminationCount
     },
 
     get isDead() {
-      return _isDead
+      return this._isDead
     },
 
     _resurgence() {
-      _isDead = false
+      this._isDead = false
     },
 
     _kill() {
-      _isDead = true
+      this._isDead = true
     },
 
     _addCount() {
-      _count = _count + 1
+      this._count = this._count + 1
     },
 
     bindContext(ctx) {
@@ -86,15 +86,15 @@ const Page = core.base.Class(function() {
     },
 
     set ctx(val) {
-      _ctx = val
+      this._ctx = val
     },
 
     get ctx() {
-      return _ctx
+      return this._ctx
     },
 
     get hasBeenOpened() {
-      return _count > 0
+      return this._count > 0
     },
 
     get isRunning() {
