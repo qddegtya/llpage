@@ -192,8 +192,7 @@ class LLPageManager {
       node.unEliminate()
       this.open(node)
     } else {
-      this.runningPage = node
-      isRunningPage && node.hooks.onResume()
+      isRunningPage && ((this.runningPage = node), node.hooks.onResume())
     }
   }
 
