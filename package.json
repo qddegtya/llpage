@@ -1,6 +1,6 @@
 {
   "name": "llpage",
-  "version": "1.0.14",
+  "version": "1.0.15",
   "description": "page operation model with LRU & lifecycle strategy.",
   "main": "./index.js",
   "files": [
