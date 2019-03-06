@@ -152,15 +152,16 @@ class LLPageManager {
         this.lruMap.set(this._genLruCacheKeyName(page), page)
       }
     } else {
+      this.lruMap.set(this._genLruCacheKeyName(page), page)
+
       // 队列没有满还有一种情况:
       // 关闭按钮向前计算时遇到淘汰态
       if (page.isEliminated) {
+        this.runningPage.hooks.onPause()
         this.runningPage = page
         this._openPage(page)
         return
       }
-
-      this.lruMap.set(this._genLruCacheKeyName(page), page)
 
       // 没有满的时候应该是依次插入到链表中去的
       if (this.isEmpty) {
