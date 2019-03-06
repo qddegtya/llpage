@@ -136,7 +136,6 @@ class LLPageManager {
         // 淘汰的老页面只触发 onDestroy
         oldestPage.eliminate()
         oldestPage.hooks.onDestroy()
-        oldestPage._kill()
 
         // 唤起新页面
         this._openPage(page)
