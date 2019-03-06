@@ -188,7 +188,7 @@ class LLPageManager {
   }
 
   _autoResumePage(node, isRunningPage) {
-    if (node.hasBeenEliminated) {
+    if (node.isEliminated && !node.isDead) {
       this.open(node)
     } else {
       isRunningPage && ((this.runningPage = node), node.hooks.onResume())
@@ -203,8 +203,13 @@ class LLPageManager {
 
     // 如果已经淘汰过了
     if (page.isEliminated) {
-      page.unEliminate()
       page.hooks.onStop()
+      page._kill()
+
+      // 从链表里将这个 page 删除
+      this.pageList.remove(this.pageList.indexOf(page))
+      // 从缓存里删除
+      this.lruMap.delete(this._genLruCacheKeyName(page))
       return
     }
 
@@ -261,26 +266,21 @@ class LLPageManager {
     this.pageList.clear()
   }
 
-  _clearRemainingStatus() {
-    const remainingPages = [...this.pageList.reverse()]
-    remainingPages.forEach(pageNode => {
-      this.pageList.remove(this.pageList.indexOf(pageNode))
-      this.lruMap.delete(this._genLruCacheKeyName(pageNode))
-    })
-  }
-
   _closeRemainingPages() {
     // 从尾部开始执行
     const remainingPages = [...this.pageList.reverse()]
     remainingPages.forEach(pageNode => {
-      if (pageNode.hasBeenEliminated) {
-        // 只要是曾经被淘汰过的页面，都只触发 onStop
-        // 只触发 onStop
-        pageNode.unEliminate()
+      if (pageNode.isEliminated) {
         pageNode.hooks.onStop()
+        pageNode._kill()
       } else {
         this._closePage(pageNode)
       }
+
+      // 从链表里将这个 page 删除
+      this.pageList.remove(this.pageList.indexOf(pageNode))
+      // 从缓存里删除
+      this.lruMap.delete(this._genLruCacheKeyName(pageNode))
     })
   }
 
@@ -291,13 +291,8 @@ class LLPageManager {
     page.bindContext(this)
 
     if (page.isEliminated) {
-      // 将自己加入白名单
-      this.pageList.remove(this.pageList.indexOf(page))
-
-      this._closeRemainingPages()
-      this._clearRemainingStatus()
-
       this.open(page)
+      this._closeRemainingPages()
       return
     }
 
@@ -321,15 +316,12 @@ class LLPageManager {
     // 随后依次触发剩余节点的 onStop onDestroy
     this._closeRemainingPages()
 
-    // 将余下的节点全部从链表和 lru 中清除
-    this._clearRemainingStatus()
-
     // 再将自己添加回到链表中
     this.pageList.add(page)
   }
 
   refresh(page) {
-    if (page.hasBeenEliminated) {
+    if (page.isEliminated && !page.isDead) {
       this.open(page)
       return
     }
