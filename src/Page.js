@@ -18,7 +18,9 @@ const Page = core.base.Class(function() {
   // private
   let _ctx = null,
     _count = 0,
-    _isDead = false
+    _isDead = false,
+    _isEliminated = false,
+    _eliminationCount = 0
 
   return {
     $ctor: function(id, opts) {
@@ -40,6 +42,27 @@ const Page = core.base.Class(function() {
           this[k] = opts[k]
         }
       }
+    },
+
+    eliminate () {
+      _isEliminated = true,
+      _eliminationCount = _eliminationCount + 1
+    },
+
+    unEliminate () {
+      _isEliminated = false
+    },
+
+    get isEliminated () {
+      return _isEliminated
+    },
+
+    get hasBeenEliminated () {
+      return _eliminationCount > 0
+    },
+
+    get eliminationCount () {
+      return _eliminationCount
     },
 
     get isDead() {

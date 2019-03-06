@@ -60,6 +60,10 @@ class LLPageManager {
   }
 
   _openPage(page) {
+    if (page.isEliminated) {
+      page.unEliminate()
+    }
+
     // 被打开过且当前状态是销毁状态
     if (page.hasBeenOpened && page.isDead) {
       this._rsr(page)
@@ -130,8 +134,9 @@ class LLPageManager {
 
         // 淘汰掉一个老页面
         // 淘汰的老页面只触发 onDestroy
-        oldestPage.isEliminated = true
+        oldestPage.eliminate()
         oldestPage.hooks.onDestroy()
+        oldestPage._kill()
 
         // 唤起新页面
         this._openPage(page)
@@ -182,13 +187,13 @@ class LLPageManager {
     return this.pageList.indexOf(page) >= 0 ? page : undefined
   }
 
-  _autoResumePage(node) {
+  _autoResumePage(node, isRunningPage) {
     if (node.isEliminated) {
-      node.isEliminated = false
+      node.unEliminate()
       this.open(node)
     } else {
       this.runningPage = node
-      node.hooks.onResume()
+      isRunningPage && node.hooks.onResume()
     }
   }
 
@@ -200,7 +205,7 @@ class LLPageManager {
 
     // 如果已经淘汰过了
     if (page.isEliminated) {
-      page.isEliminated = false
+      page.unEliminate()
       page.hooks.onStop()
       return
     }
@@ -225,12 +230,12 @@ class LLPageManager {
       if (_idx === this.pageList.size - 1) {
         // 取前链表节点
         const _preNode = this.pageList.get(_idx - 1)
-        isRunningPage && this._autoResumePage(_preNode)
+        this._autoResumePage(_preNode, isRunningPage)
       } else {
         // 默认移除后，后续节点前移
         // 取后链表节点
         const _nextNode = this.pageList.get(_idx + 1)
-        isRunningPage && this._autoResumePage(_nextNode)
+        this._autoResumePage(_nextNode, isRunningPage)
       }
 
       // 关闭
@@ -270,8 +275,8 @@ class LLPageManager {
     // 从尾部开始执行
     const remainingPages = [...this.pageList.reverse()]
     remainingPages.forEach(pageNode => {
-      if (pageNode.isEliminated) {
-        // 如果是淘汰的页面
+      if (pageNode.hasBeenEliminated) {
+        // 只要是曾经被淘汰过的页面，都只触发 onStop
         // 只触发 onStop
         pageNode.hooks.onStop()
       } else {
@@ -287,10 +292,10 @@ class LLPageManager {
     page.bindContext(this)
 
     if (page.isEliminated) {
-      page.isEliminated = false
+      page.unEliminate()
 
-      // 此时因为 isEliminated 已经被标记为 false
-      // 将自己加入白名单，以免误伤
+      // 此时因为已经 unEliminate
+      // 将自己加入白名单
       this.pageList.remove(this.pageList.indexOf(page))
 
       this._closeRemainingPages()
@@ -329,7 +334,6 @@ class LLPageManager {
 
   refresh(page) {
     if (page.isEliminated) {
-      page.isEliminated = false
       this.open(page)
       return
     }
