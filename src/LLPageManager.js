@@ -11,6 +11,10 @@ const defaultOpts = {
 
 class LLPageManager {
   constructor({ size = MAX_SIZE } = defaultOpts) {
+    if (size < 1) {
+      throw new Error('size must be >= 1')
+    }
+
     this.size = size
     this.pageList = new CircularDoublyLinkedList()
     this.runningPage = null
@@ -19,12 +23,12 @@ class LLPageManager {
 
   // 是否已满
   get isFull() {
-    return this.size <= this.pageList.size
+    return this.size <= this.lruMap.size
   }
 
   // 是否为空
   get isEmpty() {
-    return this.pageList.size <= 0
+    return this.lruMap.size <= 0
   }
 
   _checkPageIns(page) {
@@ -76,9 +80,11 @@ class LLPageManager {
   }
 
   _closePage(page) {
-    const _invoke = functional.helper
-      .intercepter(page.hooks.onDestroy)
-      .before(page.hooks.onStop).$asyncRunner
+    const _invoke = page.isDead
+      ? page.hooks.onStop
+      : functional.helper
+        .intercepter(page.hooks.onDestroy)
+        .before(page.hooks.onStop).$asyncRunner
 
     _invoke()
     page._kill()
@@ -123,12 +129,12 @@ class LLPageManager {
         // 如果不存在该 page
         // 则启用 LRU 策略进行淘汰
         const oldestPage = this.lruMap.oldest.value
+        const needDestroy =
+          this.size <= 1 ||
+          (this.size > 1 && this.lruMap.newest !== this.lruMap.oldest)
 
         // 并且将当前页面 pause
         this.runningPage.hooks.onPause()
-
-        // 将旧页面从缓存中删除
-        this.lruMap.delete(this._genLruCacheKeyName(oldestPage))
 
         // 变更 runningPage
         this.runningPage = page
@@ -137,8 +143,7 @@ class LLPageManager {
         // 淘汰的老页面只触发 onDestroy
         oldestPage.eliminate()
 
-        // 幂等操作
-        this.lruMap.size > 0 && oldestPage.hooks.onDestroy()
+        needDestroy && oldestPage.hooks.onDestroy() && oldestPage._kill()
 
         // 唤起新页面
         this._openPage(page)
@@ -148,12 +153,12 @@ class LLPageManager {
         // 以保证队列长度的准确性
         !page.hasBeenEliminated && this.pageList.add(page)
 
+        // 将旧页面从缓存中删除
+        this.lruMap.delete(this._genLruCacheKeyName(oldestPage))
         // 缓存更新
         this.lruMap.set(this._genLruCacheKeyName(page), page)
       }
     } else {
-      this.lruMap.set(this._genLruCacheKeyName(page), page)
-
       // 队列没有满还有一种情况:
       // 关闭按钮向前计算时遇到淘汰态
       if (page.isEliminated) {
@@ -192,6 +197,8 @@ class LLPageManager {
           this.pageList.add(page)
         }
       }
+
+      this.lruMap.set(this._genLruCacheKeyName(page), page)
     }
   }
 
@@ -200,7 +207,7 @@ class LLPageManager {
   }
 
   _autoResumePage(node, isRunningPage) {
-    if (node.isEliminated && !node.isDead) {
+    if (node.isEliminated) {
       this.open(node)
     } else {
       isRunningPage && ((this.runningPage = node), node.hooks.onResume())
@@ -344,7 +351,7 @@ class LLPageManager {
   }
 
   refresh(page) {
-    if (page.isEliminated && !page.isDead) {
+    if (page.isEliminated) {
       this.open(page)
       return
     }
