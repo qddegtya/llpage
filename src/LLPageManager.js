@@ -23,12 +23,12 @@ class LLPageManager {
 
   // 是否已满
   get isFull() {
-    return this.size <= this.lruMap.size
+    return this.size <= this.pageList.size
   }
 
   // 是否为空
   get isEmpty() {
-    return this.lruMap.size <= 0
+    return this.pageList.size <= 0
   }
 
   _checkPageIns(page) {
