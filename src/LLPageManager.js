@@ -160,8 +160,8 @@ class LLPageManager {
         this.lruMap.set(this._genLruCacheKeyName(page), page)
       }
     } else {
-      // 队列没有满还有一种情况:
-      // 关闭按钮向前计算时遇到淘汰态
+      // 队列没有满还有如下这种情况
+      // pageList 向前追溯时遇到淘汰状态需要唤醒
       if (page.isEliminated) {
         this.runningPage.hooks.onPause()
         this.runningPage = page
