@@ -71,28 +71,28 @@ interface PageOption<T> {
   data: T;
   
   /** 在页面对象被激活时执行 */
-  onCreate(): Promise;
+  onCreate(): Promise<T>;
 
   /** 在页面对象被激活后，即将开始 running 时执行 */
-  onStart(): Promise;
+  onStart(): Promise<T>;
 
   /** 在页面对象被隐藏后重新激活时执行 */
-  onResume(): Promise;
+  onResume(): Promise<T>;
 
   /** 在页面对象被隐藏时执行 */
-  onPause(): Promise;
+  onPause(): Promise<T>;
 
   /** 在页面对象被销毁前执行 */
-  onStop(): Promise;
+  onStop(): Promise<T>;
 
   /** 在页面对象被销毁时执行 */
-  onDestroy(): Promise;
+  onDestroy(): Promise<T>;
 
   /** 当页面对象曾经被打开过，并且当前处于 dead 状态中，这个时候被重新激活时执行 */
-  onRestart(): Promise;
+  onRestart(): Promise<T>;
 
   /** 当页面处于非淘汰状态，被刷新时触发，接收一个是否为当前运行页面的参数 isRunning */
-  onRefresh(isRunning: boolean): Promise;
+  onRefresh(isRunning: boolean): Promise<T>;
 }
 
 /**
