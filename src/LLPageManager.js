@@ -277,10 +277,10 @@ class LLPageManager {
   closeAll() {
     if (this.isEmpty) return
 
-    this.runningPage = null
-
     // 依次直接关闭，过程中已不需要再触发 onResume 等 hook
     this._closeRemainingPages()
+
+    this.runningPage = null
 
     // 清空缓存
     this.lruMap.clear()
@@ -320,12 +320,13 @@ class LLPageManager {
       // 关闭其他
       this._closeRemainingPages()
 
-      // 继续推入 lru 队列
-      this.open(page)
+      // 此时已经不需要淘汰机制
+      this.runningPage = page
+      this._openPage(page)
 
-      // 由于该页面曾被淘汰过，所以不会再被推入 pageList
-      // 所以这里手动加入
       this.pageList.add(page)
+      // 缓存更新
+      this.lruMap.set(this._genLruCacheKeyName(page), page)
 
       return
     }
