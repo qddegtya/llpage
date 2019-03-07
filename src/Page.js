@@ -9,7 +9,8 @@ const defaultOpts = {
   onPause: NOOP,
   onStop: NOOP,
   onDestroy: NOOP,
-  onRestart: NOOP
+  onRestart: NOOP,
+  onRefresh: NOOP
 }
 
 const LIFE_CYCLE_HOOKS = Object.keys(defaultOpts).filter(k => k !== DATA_KEY)

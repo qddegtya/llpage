@@ -90,6 +90,9 @@ interface PageOption<T> {
 
   /** 当页面对象曾经被打开过，并且当前处于 dead 状态中，这个时候被重新激活时执行 */
   onRestart(): Promise;
+
+  /** 当页面处于非淘汰状态，被刷新时触发，接收一个是否为当前运行页面的参数 isRunning */
+  onRefresh(isRunning: boolean): Promise;
 }
 
 /**

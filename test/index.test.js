@@ -161,21 +161,6 @@ describe("page operations", () => {
     expect(_page.hooks.onResume).toBeCalled();
   });
 
-  test("refresh current page", async () => {
-    const _page = pages[0];
-    ll.refresh(_page);
-
-    expect(_page.isRunning).toBe(true);
-    expect(ll.lruMap.size).toBe(1);
-
-    expect(_page.hooks.onStop).toBeCalled();
-    expect(_page.hooks.onDestroy).toBeCalled();
-
-    expect(_page.hooks.onRestart).toBeCalled();
-    expect(_page.hooks.onStart).toBeCalled();
-    expect(_page.hooks.onResume).toBeCalled();
-  });
-
   // 关闭其他页面
   test("close all pages", () => {
     const _page = pages[0];
