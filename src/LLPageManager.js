@@ -376,6 +376,16 @@ class LLPageManager {
     // 更新缓存
     this.lruMap.set(this._genLruCacheKeyName(page), page)
   }
+
+  // TODO
+  pin(page) {
+
+  }
+
+  // TODO
+  unpin(page) {
+
+  }
 }
 
 export default LLPageManager
