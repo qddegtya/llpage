@@ -23,7 +23,8 @@ const Page = core.base.Class(function() {
       (this._count = 0),
       (this._isDead = false),
       (this._isEliminated = false),
-      (this._eliminationCount = 0)
+      (this._eliminationCount = 0),
+      (this._isPin = false)
 
       this.id = id
       this.hooks = {}
@@ -68,6 +69,18 @@ const Page = core.base.Class(function() {
 
     get isDead() {
       return this._isDead
+    },
+
+    get isPin () {
+      return this._isPin
+    },
+
+    _pin () {
+      this._isPin = true
+    },
+
+    _unpin () {
+      this._isPin = false
     },
 
     _resurgence() {

@@ -224,6 +224,8 @@ class LLPageManager {
     this._checkPageIns(page)
     page.bindContext(this)
 
+    if (page.isPin) return
+
     // 如果已经淘汰过了
     if (page.isEliminated) {
       page.hooks.onStop()
@@ -291,7 +293,8 @@ class LLPageManager {
 
   _closeRemainingPages() {
     // 从尾部开始执行
-    const remainingPages = [...this.pageList.reverse()]
+    const remainingPages = [...this.pageList.reverse()].filter(pageNode => !pageNode.isPin)
+    
     remainingPages.forEach(pageNode => {
       if (pageNode.isEliminated) {
         pageNode.hooks.onStop()
@@ -377,14 +380,12 @@ class LLPageManager {
     this.lruMap.set(this._genLruCacheKeyName(page), page)
   }
 
-  // TODO
   pin(page) {
-
+    page._pin()
   }
 
-  // TODO
   unpin(page) {
-
+    page._unpin()
   }
 }
 
