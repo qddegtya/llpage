@@ -63,7 +63,7 @@ ll.closeAll()
 |:--|:--|:--|
 |example|simple examples inside this repo|[view](./examples/README.md)|
 
-# awesome list
+# Awesome list
 
 |name|description|homepage|
 |:--|:--|:--|
