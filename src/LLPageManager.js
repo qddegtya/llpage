@@ -279,10 +279,10 @@ class LLPageManager {
   closeAll() {
     if (this.isEmpty) return
 
+    this.runningPage = null
+    
     // 依次直接关闭，过程中已不需要再触发 onResume 等 hook
     this._closeRemainingPages()
-
-    this.runningPage = null
 
     // 清空缓存
     this.lruMap.clear()
