@@ -67,7 +67,7 @@ ll.closeAll()
 
 |name|description|homepage|
 |:--|:--|:--|
-|rice|🚧micro-frontends framework based on llpage & react|[view](https://github.com/qddegtya/rice)|
+|Rice|📦 out-of-box micro-frontends solution|[view](https://github.com/qddegtya/rice)|
 
 ## Contributors
 

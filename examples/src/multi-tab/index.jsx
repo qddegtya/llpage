@@ -71,6 +71,7 @@ const _createPage = (title, url) => ({
     this.mountNode.id = `page-${this.id}`;
     this.mountNode.style.position = "absolute";
     this.mountNode.style.width = "100%";
+    this.mountNode.style.height = "100%";
     this.mountNode.style.left = 0;
     this.mountNode.style.top = 0;
     this.mountNode.style.zIndex = -1;
