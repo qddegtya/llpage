@@ -1,0 +1,146 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>LLPage Browser</title>
+  <link rel="stylesheet" href="css/tailwind.min.css">
+  <link rel="stylesheet" href="css/main.css">
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap">
+  <link rel="stylesheet" href="css/materialdesignicons.min.css">
+</head>
+<body class="bg-gray-900 text-white overflow-hidden h-screen flex flex-col">
+  <!-- 自定义标题栏 -->
+  <header id="titlebar" class="bg-gray-800 h-10 flex items-center select-none drag">
+    <!-- 左侧标题区域 -->
+    <div class="flex items-center px-3">
+      <img src="../assets/icon.svg" alt="LLPage Browser" class="w-5 h-5 mr-2">
+      <span class="text-sm font-medium">LLPage Browser</span>
+    </div>
+    
+    <!-- 右侧窗口控制按钮 -->
+    <div class="ml-auto flex no-drag">
+      <button id="min-button" class="w-10 h-10 flex items-center justify-center hover:bg-gray-700 focus:outline-none">
+        <i class="mdi mdi-window-minimize text-lg"></i>
+      </button>
+      <button id="max-button" class="w-10 h-10 flex items-center justify-center hover:bg-gray-700 focus:outline-none">
+        <i class="mdi mdi-window-maximize text-lg"></i>
+      </button>
+      <button id="restore-button" class="w-10 h-10 flex items-center justify-center hover:bg-gray-700 focus:outline-none hidden">
+        <i class="mdi mdi-window-restore text-lg"></i>
+      </button>
+      <button id="close-button" class="w-10 h-10 flex items-center justify-center hover:bg-red-600 focus:outline-none">
+        <i class="mdi mdi-close text-lg"></i>
+      </button>
+    </div>
+  </header>
+  
+  <!-- 控制栏 -->
+  <div class="bg-gray-800 p-2 flex items-center space-x-2">
+    <div class="flex space-x-2">
+      <button id="back-button" class="w-8 h-8 rounded-full flex items-center justify-center text-gray-300 hover:bg-gray-700 disabled:opacity-50" disabled>
+        <i class="mdi mdi-arrow-left text-lg"></i>
+      </button>
+      <button id="forward-button" class="w-8 h-8 rounded-full flex items-center justify-center text-gray-300 hover:bg-gray-700 disabled:opacity-50" disabled>
+        <i class="mdi mdi-arrow-right text-lg"></i>
+      </button>
+      <button id="reload-button" class="w-8 h-8 rounded-full flex items-center justify-center text-gray-300 hover:bg-gray-700">
+        <i class="mdi mdi-reload text-lg"></i>
+      </button>
+    </div>
+    
+    <!-- 地址栏 -->
+    <div class="flex-1 flex items-center bg-gray-900 border border-gray-700 rounded-full overflow-hidden">
+      <!-- 安全图标区域 -->
+      <div class="flex items-center justify-center w-10 h-10 text-gray-400">
+        <i id="security-icon" class="mdi mdi-shield-outline text-lg"></i>
+      </div>
+      <!-- 文本输入区域 -->
+      <input id="url-bar" type="text" class="flex-1 h-10 bg-transparent border-none outline-none text-white pr-10" placeholder="Search or enter website name">
+      <!-- 搜索按钮 -->
+      <button id="search-button" class="flex items-center justify-center w-10 h-10 text-gray-400 hover:text-white">
+        <i class="mdi mdi-magnify text-lg"></i>
+      </button>
+    </div>
+    
+    <!-- 工具栏 -->
+    <div class="flex space-x-1">
+      <button id="debug-button" class="w-8 h-8 rounded-full flex items-center justify-center text-gray-300 hover:bg-gray-700">
+        <i class="mdi mdi-bug-outline text-lg"></i>
+      </button>
+      <button id="menu-button" class="w-8 h-8 rounded-full flex items-center justify-center text-gray-300 hover:bg-gray-700">
+        <i class="mdi mdi-dots-vertical text-lg"></i>
+      </button>
+    </div>
+  </div>
+  
+  <!-- 标签页容器 -->
+  <div id="tabs-container" class="bg-gray-900 flex items-center h-10 px-2 select-none">
+    <button id="new-tab-button" class="min-w-8 h-8 flex items-center justify-center rounded hover:bg-gray-700 ml-1">
+      <i class="mdi mdi-plus text-lg"></i>
+    </button>
+  </div>
+  
+  <!-- 浏览器视图区域 -->
+  <div id="browser-container" class="flex-1 relative">
+    <!-- webview标签会在这里动态插入 -->
+  </div>
+  
+  <!-- 菜单弹出层 -->
+  <div id="menu-popup" class="absolute right-2 top-24 bg-gray-800 border border-gray-700 rounded-lg shadow-lg p-2 w-56 z-50 hidden">
+    <div class="flex flex-col space-y-1">
+      <button class="menu-item flex items-center p-2 rounded hover:bg-gray-700">
+        <i class="mdi mdi-tab-plus text-lg mr-2"></i>
+        <span>New Tab</span>
+        <span class="ml-auto text-xs text-gray-400">Ctrl+T</span>
+      </button>
+      <button class="menu-item flex items-center p-2 rounded hover:bg-gray-700">
+        <i class="mdi mdi-window-new text-lg mr-2"></i>
+        <span>New Window</span>
+        <span class="ml-auto text-xs text-gray-400">Ctrl+N</span>
+      </button>
+      <div class="border-t border-gray-700 my-1"></div>
+      <button class="menu-item flex items-center p-2 rounded hover:bg-gray-700">
+        <i class="mdi mdi-content-save text-lg mr-2"></i>
+        <span>Save Page As...</span>
+        <span class="ml-auto text-xs text-gray-400">Ctrl+S</span>
+      </button>
+      <button class="menu-item flex items-center p-2 rounded hover:bg-gray-700">
+        <i class="mdi mdi-printer text-lg mr-2"></i>
+        <span>Print...</span>
+        <span class="ml-auto text-xs text-gray-400">Ctrl+P</span>
+      </button>
+      <button class="menu-item flex items-center p-2 rounded hover:bg-gray-700">
+        <i class="mdi mdi-cog text-lg mr-2"></i>
+        <span>Settings</span>
+      </button>
+      <div class="border-t border-gray-700 my-1"></div>
+      <button class="menu-item flex items-center p-2 rounded hover:bg-gray-700">
+        <i class="mdi mdi-exit-to-app text-lg mr-2"></i>
+        <span>Exit</span>
+        <span class="ml-auto text-xs text-gray-400">Ctrl+Q</span>
+      </button>
+    </div>
+  </div>
+  
+  <!-- 模板元素 -->
+  <template id="tab-template">
+    <div class="tab bg-gray-800 text-gray-300" data-tab-id="">
+      <div class="favicon">
+        <i class="mdi mdi-web text-sm"></i>
+      </div>
+      <span class="title">New Tab</span>
+      <button class="close-tab-btn">
+        <i class="mdi mdi-close text-xs"></i>
+      </button>
+    </div>
+  </template>
+
+  <template id="webview-template">
+    <webview class="absolute top-0 left-0 w-full h-full hidden" data-webview-id="" allowpopups webpreferences="nodeIntegration=no, contextIsolation=yes, enableRemoteModule=no"></webview>
+  </template>
+
+  <!-- 脚本 -->
+  <script src="js/main.js"></script>
+</body>
+</html>
