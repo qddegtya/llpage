@@ -29,15 +29,32 @@ if (module.parent === null) {
     output: {
       path: path.resolve(__dirname, DIST_NAME),
       filename: '[name].dist.js',
-      publicPath: '/build/'
+      publicPath: '/build/',
+      globalObject: 'this'
     },
 
     module: {
       rules: [
         {
+          // 处理 llpage 库文件
+          test: /[\\/]lib[\\/].*\.js$/,
+          include: [path.resolve(__dirname, '../../lib')],
+          use: {
+            loader: 'babel-loader',
+            options: {
+              presets: [['@babel/preset-env', {
+                modules: false, // 这时候我们需要转换成 ES 模块
+                targets: {
+                  browsers: ["last 2 chrome versions", "last 2 firefox versions"]
+                }
+              }]],
+            }
+          }
+        },
+        {
           test: /.jsx?$/,
           loader: 'babel-loader',
-          exclude: /node_modules/,
+          exclude: [/node_modules/, path.resolve(__dirname, '../../lib')], // 排除 llpage lib
           options: {
             presets: ['@babel/preset-env', '@babel/preset-react'],
             plugins: [
@@ -55,7 +72,7 @@ if (module.parent === null) {
 
     resolve: {
       alias: {
-        'llpage': path.join(__dirname, '..', 'index.js')
+        'llpage': path.join(__dirname, '..', '..', 'index.js')
       }
     },
 
